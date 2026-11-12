@@ -103,7 +103,7 @@ Built to bring student developers together, FusionV provides a centralized space
 ```text
 FusionV/
 │
-├── frontend-react/
+├── frontend/
 │   ├── public/
 │   ├── src/
 │   ├── e2e/
