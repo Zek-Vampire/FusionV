@@ -1,0 +1,10 @@
+target/
+.env
+uploads/resources/*
+uploads/resumes/*
+!uploads/resources/.gitkeep
+!uploads/resumes/.gitkeep
+.idea/
+.vscode/
+*.iml
+*.log
