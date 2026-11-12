@@ -96,28 +96,117 @@ Built to bring student developers together, FusionV provides a centralized space
 ## Project Structure
 
 ```text
+
 FusionV/
-│
-├── frontend/
-│   ├── public/
-│   ├── src/
-│   ├── e2e/
-│   ├── package.json
-│   ├── package-lock.json
-│   ├── vite.config.js
-│   └── playwright.config.js
-│
-├── backend/
-│   ├── src/
-│   ├── database/
-│   ├── pom.xml
-│   ├── docker-compose.yml
-│   └── .env.example
 │
 ├── .gitignore
 ├── LICENSE
-└── README.md
-```
+├── README.md
+│
+├── backend/
+│   ├── .env.example
+│   ├── .gitignore
+│   ├── pom.xml
+│   ├── docker-compose.yml
+│   ├── run-dev.ps1
+│   ├── run-dev.sh
+│   ├── README.md
+│   ├── API_DOCUMENTATION.md
+│   ├── FRONTEND_INTEGRATION.md
+│   │
+│   ├── database/
+│   │   ├── DATABASE_SETUP.md
+│   │   ├── demo-data.sql
+│   │   ├── er-diagram.md
+│   │   ├── schema.sql
+│   │   ├── init/
+│   │   │   ├── 01-schema.sql
+│   │   │   └── 02-demo-data.sql
+│   │   └── migrations/
+│   │       └── 002_structured_posts.sql
+│   │
+│   └── src/
+│       ├── main/
+│       │   ├── java/com/fusionv/
+│       │   │   ├── FusionvApplication.java
+│       │   │   ├── config/
+│       │   │   ├── controller/
+│       │   │   ├── dto/
+│       │   │   ├── exception/
+│       │   │   ├── model/
+│       │   │   ├── notification/
+│       │   │   ├── repository/
+│       │   │   ├── security/
+│       │   │   ├── service/
+│       │   │   └── util/
+│       │   │
+│       │   └── resources/
+│       │       └── application.properties.example
+│       │
+│       └── test/
+│           └── java/com/fusionv/
+│               ├── controller/
+│               ├── exception/
+│               ├── notification/
+│               ├── service/
+│               ├── util/
+│               └── TestData.java
+│
+└── frontend/
+    ├── .env.example
+    ├── .gitignore
+    ├── package.json
+    ├── package-lock.json
+    ├── index.html
+    ├── vite.config.js
+    ├── vitest.config.js
+    ├── playwright.config.js
+    ├── DEPLOYMENT.md
+    │
+    ├── public/
+    │   └── assets/
+    │
+    ├── e2e/
+    │   └── support/
+    │
+    └── src/
+        ├── main.jsx
+        ├── components/
+        │   ├── cards/
+        │   ├── common/
+        │   ├── motion/
+        │   ├── navigation/
+        │   ├── posts/
+        │   ├── profile/
+        │   ├── public/
+        │   ├── reactbits/
+        │   ├── teams/
+        │   └── ui/
+        │
+        ├── context/
+        ├── hooks/
+        ├── layouts/
+        ├── lib/
+        ├── pages/
+        │   ├── Auth/
+        │   ├── Community/
+        │   ├── Dashboard/
+        │   ├── Hackathons/
+        │   ├── Messages/
+        │   ├── Notifications/
+        │   ├── Profile/
+        │   ├── Resources/
+        │   ├── Search/
+        │   ├── Settings/
+        │   ├── Students/
+        │   └── Teams/
+        │
+        ├── routes/
+        ├── services/
+        │   └── api/
+        ├── styles/
+        └── test/
+
 
 ---
 
