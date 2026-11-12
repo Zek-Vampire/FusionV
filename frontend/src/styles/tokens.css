@@ -1,0 +1,251 @@
+@import "tailwindcss";
+
+/*
+ * FusionV design tokens — the single source of truth for colour, radius, shadow
+ * and motion. Component code uses Tailwind utilities generated from these tokens
+ * instead of hardcoded hex values.
+ */
+@theme {
+  --color-background: #050706;
+  --color-surface: #0d120f;
+  --color-elevated: #141c17;
+  --color-lime: #75ff43;
+  --color-lime-dark: #42c91d;
+  --color-silver: #c7d0ca;
+  --color-ink: #f5f8f5;
+  --color-muted: #829087;
+  --color-line: #233128;
+
+  --radius-panel: 1rem;
+  --radius-panel-lg: 1.25rem;
+
+  --shadow-glow: 0 0 0 1px rgba(117, 255, 67, 0.18), 0 24px 80px -32px rgba(117, 255, 67, 0.4);
+  --shadow-panel: 0 32px 80px -48px rgba(0, 0, 0, 0.95);
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --animate-float-slow: float-slow 16s ease-in-out infinite;
+  --animate-shimmer: shimmer 1.8s linear infinite;
+  --animate-toast-in: toast-in 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  --animate-pulse-soft: pulse-soft 3.5s ease-in-out infinite;
+  --animate-scan: scan 7s linear infinite;
+  --animate-page-in: page-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-hero-in: hero-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+
+  @keyframes float-slow {
+    0%,
+    100% {
+      transform: translate3d(-50%, 0, 0) scale(1);
+    }
+    50% {
+      transform: translate3d(-50%, -3%, 0) scale(1.06);
+    }
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+
+  @keyframes toast-in {
+    from {
+      opacity: 0;
+      transform: translateY(12px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes pulse-soft {
+    0%,
+    100% {
+      opacity: 0.35;
+    }
+    50% {
+      opacity: 0.7;
+    }
+  }
+
+  @keyframes scan {
+    0% {
+      transform: translateY(-100%);
+    }
+    100% {
+      transform: translateY(100%);
+    }
+  }
+
+  @keyframes page-in {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+      filter: blur(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+      filter: blur(0);
+    }
+  }
+
+  @keyframes hero-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+      filter: blur(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+      filter: blur(0);
+    }
+  }
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    min-height: 100vh;
+    margin: 0;
+    background-color: var(--color-background);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-lime);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: var(--color-lime);
+    color: var(--color-background);
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-background);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    border: 2px solid var(--color-background);
+    border-radius: 999px;
+    background: var(--color-line);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #2f4336;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  /* Faint technical grid behind the app; masked so it fades out. */
+  .bg-grid {
+    background-image:
+      linear-gradient(to right, rgba(35, 49, 40, 0.5) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(35, 49, 40, 0.5) 1px, transparent 1px);
+    background-size: 64px 64px;
+    -webkit-mask-image: radial-gradient(ellipse 85% 60% at 50% 0%, #000 35%, transparent 100%);
+    mask-image: radial-gradient(ellipse 85% 60% at 50% 0%, #000 35%, transparent 100%);
+  }
+
+  .glass-panel {
+    background-color: rgba(13, 18, 15, 0.72);
+    -webkit-backdrop-filter: blur(18px);
+    backdrop-filter: blur(18px);
+  }
+
+  .text-gradient {
+    background-image: linear-gradient(100deg, #f5f8f5 0%, #c7d0ca 45%, #75ff43 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .skeleton {
+    background-image: linear-gradient(90deg, #141c17 25%, #1b2620 37%, #141c17 63%);
+    background-size: 400% 100%;
+    animation: var(--animate-shimmer);
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-line) transparent;
+  }
+
+  .page-enter {
+    animation: var(--animate-page-in);
+  }
+
+  .hero-blur-in {
+    animation: var(--animate-hero-in);
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(var(--reveal-y, 18px));
+    transition:
+      opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0s),
+      transform 0.55s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0s);
+  }
+
+  .reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .reveal-stagger .reveal-item {
+    opacity: 0;
+    transform: translateY(14px);
+    transition:
+      opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .reveal-stagger.is-visible .reveal-item {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .reveal-stagger.is-visible .reveal-item:nth-child(2) { transition-delay: calc(var(--reveal-stagger, 0.06s) * 1); }
+  .reveal-stagger.is-visible .reveal-item:nth-child(3) { transition-delay: calc(var(--reveal-stagger, 0.06s) * 2); }
+  .reveal-stagger.is-visible .reveal-item:nth-child(4) { transition-delay: calc(var(--reveal-stagger, 0.06s) * 3); }
+  .reveal-stagger.is-visible .reveal-item:nth-child(5) { transition-delay: calc(var(--reveal-stagger, 0.06s) * 4); }
+  .reveal-stagger.is-visible .reveal-item:nth-child(6) { transition-delay: calc(var(--reveal-stagger, 0.06s) * 5); }
+}
