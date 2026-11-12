@@ -1,143 +1,361 @@
-# FusionV backend
+# FusionV Backend
 
-FusionV is a student collaboration platform: students register, build a profile (skills, interests, projects, achievements),
-explore hackathons, form teams, chat inside teams, share study materials and post updates.
-This folder is the **Spring Boot + PostgreSQL backend**. The original HTML/CSS/JS frontend lives next to it in `../frontend`
-and is connected to the backend through `fetch()` calls (see `FRONTEND_INTEGRATION.md`).
+The FusionV backend is a REST API built with **Java 21, Spring Boot, and PostgreSQL**. It handles authentication, student profiles, hackathons, team collaboration, community posts, messaging, notifications, and resource management.
 
-## Technology stack
+The backend communicates with the React frontend through REST endpoints under `/api/v1`.
 
-| Part | Technology |
+## Technology Stack
+
+| Component | Technology |
 |---|---|
-| Language / build | Java 21, Maven |
-| Framework | Spring Boot 3.3.5 (Spring Web, Spring Data JPA/Hibernate, Spring Security, Bean Validation) |
-| Database | PostgreSQL 16 (only database used, no MySQL anywhere) |
-| Login | BCrypt password hashes + JWT bearer token (jjwt 0.12.6) |
-| Files | Java I/O + NIO, multipart upload, files stored on disk (`uploads/`), metadata in PostgreSQL |
-| Tests | JUnit 5, Mockito |
-
-Flow of every request: `Frontend -> Controller -> Service -> Repository -> PostgreSQL`.
+| Programming Language | Java 21 |
+| Framework | Spring Boot 3.3.5 |
+| Build Tool | Maven |
+| Database | PostgreSQL |
+| ORM | Spring Data JPA / Hibernate |
+| Security | Spring Security |
+| Authentication | JWT |
+| Password Hashing | BCrypt |
+| Validation | Jakarta Bean Validation |
+| File Handling | Java I/O and NIO |
+| Testing | JUnit 5, Mockito, Spring Boot Test |
 
 ## Prerequisites
 
-* JDK 21 (`java -version` must say 21)
-* Maven 3.9+ (`mvn -version`)
-* PostgreSQL 16 (or any recent stable version)
+Install the following before running the backend:
 
-## 1. Install and start PostgreSQL
+- JDK 21
+- Apache Maven 3.9 or newer
+- PostgreSQL
+- Git
 
-* **Windows:** download the installer from https://www.postgresql.org/download/windows/ , keep the default port `5432`, remember the password you set for the `postgres` user.
-* **macOS (Homebrew):** `brew install postgresql@16 && brew services start postgresql@16`
-* **Ubuntu/Debian:** `sudo apt install postgresql` (the service starts automatically)
-* **Docker:** `docker run --name fusionv-db -e POSTGRES_PASSWORD=change_me -p 5432:5432 -d postgres:16`
+Verify your installations:
 
-## 2. Create the database
+```bash
+java -version
+mvn -version
+psql --version
+```
+
+## 1. Database Setup
+
+FusionV uses PostgreSQL.
+
+Create a database named `fusionv`:
+
+```sql
+CREATE DATABASE fusionv;
+```
+
+You can create the database through pgAdmin or the PostgreSQL command line:
 
 ```bash
 psql -U postgres -c "CREATE DATABASE fusionv;"
 ```
-(On Windows you can also use the *SQL Shell (psql)* or pgAdmin and run `CREATE DATABASE fusionv;`.)
 
-### Two ways to create the tables (choose ONE)
+### Database initialization options
 
-| Approach | How | When |
-|---|---|---|
-| **A. Hibernate creates them** (default) | Do nothing. `DDL_AUTO=update` lets Hibernate create/alter tables at startup. | Local development |
-| **B. SQL script** | `psql -U postgres -d fusionv -f database/schema.sql`, then start with `DDL_AUTO=validate`. | Controlled / production-like setup |
+Choose one of the following approaches.
 
-Spring is configured with `spring.sql.init.mode=never`, so `schema.sql` is never run by Spring itself and cannot conflict with Hibernate.
-Optional demo rows (clearly labelled `[DEMO]`, not real hackathons): `psql -U postgres -d fusionv -f database/demo-data.sql`.
+**Option A: Docker Compose**
 
-*Production note:* `update` is only for local development. For production use a migration tool such as Flyway or Liquibase
-(start from `database/schema.sql` as version 1) and run with `DDL_AUTO=validate`.
-
-## 3. Configure environment variables
-
-Spring Boot does **not** read a `.env` file by itself. Copy `.env.example` to `.env`, fill in your values and then either
-
-* run the helper script (it loads `.env` and starts the app): `./run-dev.sh` (Linux/macOS/Git Bash) or `.\run-dev.ps1` (Windows PowerShell), **or**
-* set the variables yourself (PowerShell: `$env:DB_PASSWORD="..."`, bash: `export DB_PASSWORD=...`), **or**
-* add them to your IDE run configuration.
-
-| Variable | Required | Meaning |
-|---|---|---|
-| `DB_PASSWORD` | yes | PostgreSQL password |
-| `JWT_SECRET` | yes | Random text, **at least 32 characters** (signs login tokens) |
-| `DB_URL` | no | default `jdbc:postgresql://localhost:5432/fusionv` |
-| `DB_USERNAME` | no | default `postgres` |
-| `CORS_ALLOWED_ORIGINS` | no | comma separated frontend origins, default `http://localhost:5500,http://127.0.0.1:5500,http://localhost:3000` |
-| `UPLOAD_DIR` | no | where uploaded files are stored, default `uploads` |
-| `ADMIN_EMAIL`, `ADMIN_PASSWORD` | no | creates the first administrator at startup (needed to add hackathons) |
-| `HACKATHON_CSV_PATH` | no | CSV feed for hackathons, see below |
-| `DDL_AUTO` | no | `update` (default) or `validate` |
-
-Never commit `.env` (it is in `.gitignore`). No credentials are hardcoded anywhere.
-
-## 4. Build, test and run
+From the backend directory:
 
 ```bash
-mvn clean test            # unit tests (no database needed)
-mvn spring-boot:run       # start on http://localhost:8080   (or ./run-dev.sh)
-mvn clean package         # builds target/fusionv-1.0.0.jar
+docker compose up -d
 ```
 
-## 5. Connect the frontend
+Docker Compose initializes the database using the SQL files in `database/init/`.
 
-1. Start the backend (port 8080).
-2. Serve `../frontend` over HTTP, for example VS Code *Live Server* (port 5500) or `python -m http.server 5500` inside `frontend/`.
-   Do not open `index.html` with `file://`: browsers send the origin `null` and CORS will block the calls.
-3. If the backend runs elsewhere, edit `frontend/config.js` (`apiBaseUrl`).
+**Option B: Manual SQL initialization**
 
-## How files are stored
+From the backend directory:
 
-* Study materials: `uploads/resources/`, resumes: `uploads/resumes/` (outside `src/`, ignored by Git).
-* Every file is saved under a random name (`UUID.ext`); the original name is only metadata in PostgreSQL, so path traversal is impossible.
-* Allowed: pdf, doc, docx, ppt, pptx, txt, png, jpg, jpeg (resumes: pdf, doc, docx), max 10 MB.
-  Extension, content type and the file's first bytes ("magic bytes") must all agree (`util/FileValidator`).
-* Downloads are public (`GET /api/v1/resources/{id}/download`); uploads, edits and deletes need a login and ownership.
-
-## Hackathon data sources
-
-There are no invented hackathons and no scraping. Hackathons enter the system in three ways:
-
-1. **Administrator** (`ADMIN_EMAIL` account): `POST/PUT/DELETE /api/v1/hackathons`.
-2. **Import**: `POST /api/v1/hackathons/import` (JSON list) or `/import/csv` (CSV upload).
-3. **Configured feed**: set `HACKATHON_CSV_PATH=/path/to/hackathons.csv`, then call `POST /api/v1/hackathons/sync` as admin.
-
-CSV header (only `name` and `mode` are required): 
-`name,domain,organizer,location,mode,description,eligibility,startDate,endDate,registrationDeadline,minTeamSize,maxTeamSize,registrationUrl`
-(dates `2027-01-31`, mode `ONLINE|OFFLINE|HYBRID`). Rows with the same name and start date are skipped.
-To connect an authorized partner API later, write one class implementing `service/HackathonDataSource`; Spring picks it up automatically.
-
-## Project layout
-
+```bash
+psql -U postgres -d fusionv -f database/schema.sql
 ```
-backend/
-  src/main/java/com/fusionv/
-    controller/    REST endpoints          service/     business rules
-    repository/    Spring Data JPA + search specifications
-    model/         JPA entities + enums    dto/         request/response records
-    security/      JWT                     config/      security, first admin
-    notification/  abstract notification classes + thread pool sender
-    exception/     custom exceptions + GlobalExceptionHandler
-    util/          validation, file checks, syllabus demos
-  database/        schema.sql, demo-data.sql, er-diagram.md
-  uploads/         stored files (git-ignored)
+
+Optional demo data:
+
+```bash
+psql -U postgres -d fusionv -f database/demo-data.sql
 ```
-Documents: `API_DOCUMENTATION.md`, `FRONTEND_INTEGRATION.md`, `SYLLABUS_MAPPING.md`, `database/er-diagram.md`.
 
-## Database tables
+**Option C: Hibernate initialization**
 
-`users`, `skills`, `user_skills`, `user_interests`, `hackathons`, `teams`, `team_skills`, `team_members`, `join_requests`,
-`posts`, `post_likes`, `comments`, `resources`, `messages`, `notifications`. ER diagram (Mermaid): `database/er-diagram.md`.
-Key rules in the schema: unique email, unique `(team_id,user_id)` membership, unique `(post_id,user_id)` like,
-at most one pending request per `(team_id,user_id)`, foreign keys everywhere, indexes on search/foreign-key columns.
+For local development, Hibernate can create or update tables automatically by using:
 
-## Team work split (four students)
+```env
+DDL_AUTO=update
+```
 
-| Student | Area | Main folders/files |
-|---|---|---|
-| 1 | Authentication, profiles, security | `AuthService`, `UserService`, `security/`, `config/SecurityConfig` |
-| 2 | Hackathons and teams | `HackathonService`, `TeamService`, `notification/` |
-| 3 | Resources, files, posts | `StudyResourceService`, `FileStorageService`, `PostService`, `util/FileValidator` |
-| 4 | Database, tests, syllabus demos, docs | `database/`, `src/test/`, `util/*Demo`, `SYLLABUS_MAPPING.md` |
+Do not combine Hibernate table generation with manual schema initialization.
+
+For a controlled setup, initialize the schema using SQL and use:
+
+```env
+DDL_AUTO=validate
+```
+
+For production, use a proper database migration strategy rather than relying on Hibernate's `update` mode.
+
+For more information, see `database/DATABASE_SETUP.md`.
+
+## 2. Environment Configuration
+
+Navigate to the backend directory:
+
+```bash
+cd backend
+```
+
+Create your local `.env` file from the example.
+
+**Windows PowerShell:**
+
+```powershell
+Copy-Item .env.example .env
+```
+
+**Linux / macOS / Git Bash:**
+
+```bash
+cp .env.example .env
+```
+
+Open `.env` and configure your database credentials and application secrets.
+
+| Variable | Description |
+|---|---|
+| `DB_URL` | PostgreSQL JDBC connection URL |
+| `DB_USERNAME` | PostgreSQL username |
+| `DB_PASSWORD` | PostgreSQL password |
+| `JWT_SECRET` | Random secret of at least 32 characters |
+| `JWT_EXPIRATION_MINUTES` | JWT token validity in minutes |
+| `CORS_ALLOWED_ORIGINS` | Allowed frontend origins |
+| `UPLOAD_DIR` | Directory used for uploaded files |
+| `ADMIN_EMAIL` | Optional initial administrator email |
+| `ADMIN_PASSWORD` | Optional initial administrator password |
+| `HACKATHON_CSV_PATH` | Optional hackathon CSV file path |
+| `DDL_AUTO` | Hibernate schema management mode |
+
+Never commit your `.env` file or expose database credentials and JWT secrets.
+
+## 3. Run the Backend
+
+Make sure PostgreSQL is running and the database is configured.
+
+**Windows PowerShell:**
+
+```powershell
+.\run-dev.ps1
+```
+
+**Linux / macOS / Git Bash:**
+
+```bash
+./run-dev.sh
+```
+
+Alternatively, run Maven directly after configuring the required environment variables:
+
+```bash
+mvn spring-boot:run
+```
+
+The backend API runs at:
+
+```text
+http://localhost:8080
+```
+
+The API base path is:
+
+```text
+http://localhost:8080/api/v1
+```
+
+## 4. Connect the React Frontend
+
+The current FusionV frontend is built using React and Vite and is located in the repository's `frontend/` directory.
+
+Open another terminal from the project root:
+
+```bash
+cd frontend
+```
+
+Install dependencies:
+
+```bash
+npm ci
+```
+
+Start the frontend development server:
+
+```bash
+npm run dev
+```
+
+Open:
+
+```text
+http://localhost:5173
+```
+
+The Vite development server proxies `/api` requests to the Spring Boot backend at `http://localhost:8080` by default.
+
+To change the backend proxy target, configure `VITE_PROXY_TARGET` in the frontend environment.
+
+For deployment and production configuration, see `frontend/DEPLOYMENT.md`.
+
+## 5. Backend Architecture
+
+The backend follows a layered architecture:
+
+```text
+Client Request
+      |
+      v
+Controller Layer
+      |
+      v
+Service Layer
+      |
+      v
+Repository Layer
+      |
+      v
+PostgreSQL Database
+```
+
+### Main packages
+
+| Package | Responsibility |
+|---|---|
+| `config/` | Application and security configuration |
+| `controller/` | REST API endpoints |
+| `dto/` | Request and response objects |
+| `exception/` | Custom exceptions and global exception handling |
+| `model/` | JPA entities and enums |
+| `notification/` | Notification processing and templates |
+| `repository/` | Database access using Spring Data JPA |
+| `security/` | JWT authentication and authorization |
+| `service/` | Application business logic |
+| `util/` | Validation, file handling and utility classes |
+
+Main application entry point:
+
+```text
+src/main/java/com/fusionv/FusionvApplication.java
+```
+
+## 6. Database Structure
+
+The PostgreSQL schema contains 16 tables:
+
+1. `users`
+2. `skills`
+3. `user_skills`
+4. `user_interests`
+5. `hackathons`
+6. `teams`
+7. `team_skills`
+8. `team_members`
+9. `join_requests`
+10. `posts`
+11. `post_technologies`
+12. `post_likes`
+13. `comments`
+14. `resources`
+15. `messages`
+16. `notifications`
+
+The database schema and entity relationships are documented in:
+
+- `database/schema.sql`
+- `database/er-diagram.md`
+- `database/DATABASE_SETUP.md`
+
+## 7. File Storage
+
+FusionV supports file uploads for study resources and student resumes.
+
+Uploaded files are stored locally under the configured upload directory.
+
+Default directories:
+
+```text
+uploads/
+├── resources/
+└── resumes/
+```
+
+Uploaded files are excluded from Git through `.gitignore`.
+
+The application validates uploaded file types and enforces file size limits.
+
+## 8. Hackathon Management
+
+Hackathon records can be managed through administrator functionality and import endpoints.
+
+Supported operations include:
+
+- Creating, updating and deleting hackathons.
+- Importing hackathons using JSON.
+- Importing hackathons through CSV.
+- Synchronizing hackathons from a configured CSV source.
+
+An initial administrator can be configured through `ADMIN_EMAIL` and `ADMIN_PASSWORD` in `.env`.
+
+See `API_DOCUMENTATION.md` for endpoint details.
+
+## 9. Testing
+
+Run the backend test suite from the backend directory:
+
+```bash
+mvn clean test
+```
+
+Build the backend:
+
+```bash
+mvn clean package
+```
+
+The generated JAR is placed in:
+
+```text
+target/
+```
+
+## 10. API Documentation
+
+Detailed API endpoint information is available in:
+
+```text
+API_DOCUMENTATION.md
+```
+
+Frontend integration and API communication are implemented in the React frontend under:
+
+```text
+../frontend/src/services/
+```
+
+## Security Notes
+
+- Authentication uses JWT.
+- Passwords are hashed using BCrypt.
+- Protected endpoints require authentication.
+- File uploads are validated.
+- Database credentials and application secrets must be configured through environment variables.
+- Never commit `.env` or production credentials.
+- Configure production CORS origins and secure deployment settings before hosting.
+
+## License
+
+This project is licensed under the Apache License 2.0.
+
+See the root `LICENSE` file for details.
