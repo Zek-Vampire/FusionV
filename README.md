@@ -207,7 +207,7 @@ FusionV/
         ├── styles/
         └── test/
 
-
+```
 ---
 
 ## Getting Started
@@ -228,7 +228,6 @@ Install the following:
 git clone https://github.com/Zek-Vampire/FusionV.git
 cd FusionV
 ```
-
 ### 2. Configure the Backend
 
 Open a terminal:
