@@ -73,7 +73,7 @@ Built to bring student developers together, FusionV provides a centralized space
 
 ### Backend
 - Java 21
-- Spring Boot 3
+- Spring Boot 3.3.5
 - Spring Security
 - Spring Data JPA
 - Hibernate
@@ -88,13 +88,8 @@ Built to bring student developers together, FusionV provides a centralized space
 - React Testing Library
 - Playwright
 - Axe Accessibility Testing
-
-### Development Tools
-- Git
-- GitHub
-- Visual Studio Code
-- Postman
-- pgAdmin
+- JUnit 5
+- Mockito
 
 ---
 
@@ -103,10 +98,6 @@ Built to bring student developers together, FusionV provides a centralized space
 ```text
 FusionV/
 │
-├── .gitignore
-├── LICENSE
-├── README.md
-│
 ├── frontend/
 │   ├── public/
 │   ├── src/
@@ -114,33 +105,19 @@ FusionV/
 │   ├── package.json
 │   ├── package-lock.json
 │   ├── vite.config.js
-│   ├── vitest.config.js
-│   └── DEPLOYMENT.md
+│   └── playwright.config.js
 │
-└── backend/
-    ├── .env.example
-    ├── .gitignore
-    ├── pom.xml
-    ├── docker-compose.yml
-    ├── run-dev.ps1
-    ├── run-dev.sh
-    ├── README.md
-    ├── API_DOCUMENTATION.md
-    ├── FRONTEND_INTEGRATION.md
-    │
-    ├── database/
-    │   ├── schema.sql
-    │   ├── demo-data.sql
-    │   ├── init/
-    │   └── migrations/
-    │
-    └── src/
-        ├── main/
-        │   ├── java/
-        │   └── resources/
-        │       └── application.properties.example
-        │
-        └── test/
+├── backend/
+│   ├── src/
+│   ├── database/
+│   ├── pom.xml
+│   ├── docker-compose.yml
+│   └── .env.example
+│
+├── .gitignore
+├── LICENSE
+└── README.md
+```
 
 ---
 
@@ -148,7 +125,7 @@ FusionV/
 
 ### Prerequisites
 
-Make sure you have installed:
+Install the following:
 
 - Node.js 20.19 or newer
 - Java 21
@@ -165,21 +142,43 @@ cd FusionV
 
 ### 2. Configure the Backend
 
-Navigate to the backend directory:
+Open a terminal:
 
 ```bash
 cd backend
 ```
 
-Create your local environment configuration using the provided `.env.example`.
+Create your local environment file from the example:
 
-Configure your PostgreSQL database credentials and required application secrets.
+**Windows PowerShell:**
+```powershell
+Copy-Item .env.example .env
+```
 
-Follow the backend README for database setup and environment configuration.
+**Linux / macOS / Git Bash:**
+```bash
+cp .env.example .env
+```
 
-Start the Spring Boot backend using the documented development command.
+Edit `.env` and configure your PostgreSQL credentials and application secrets.
 
-The default backend address is:
+Create the PostgreSQL database named `fusionv` if it does not already exist.
+
+Follow `backend/README.md` for the complete database setup instructions.
+
+Start the backend:
+
+**Windows PowerShell:**
+```powershell
+.\run-dev.ps1
+```
+
+**Linux / macOS / Git Bash:**
+```bash
+./run-dev.sh
+```
+
+The backend runs at:
 
 ```text
 http://localhost:8080
@@ -187,16 +186,16 @@ http://localhost:8080
 
 ### 3. Configure the Frontend
 
-Open another terminal and navigate to the React frontend:
+Open another terminal from the project root:
 
 ```bash
-cd frontend-react
+cd frontend
 ```
 
 Install dependencies:
 
 ```bash
-npm install
+npm ci
 ```
 
 Start the development server:
@@ -211,6 +210,8 @@ Open the application:
 http://localhost:5173
 ```
 
+The Vite development server proxies `/api` requests to the Spring Boot backend by default.
+
 ---
 
 ## Testing
@@ -218,33 +219,52 @@ http://localhost:5173
 Run frontend unit and component tests:
 
 ```bash
+cd frontend
 npm test
 ```
 
-Run the production build:
+Create a production build:
 
 ```bash
 npm run build
 ```
 
-Run the Playwright end-to-end suite:
+Run the Playwright end-to-end tests:
 
 ```bash
-npx playwright test
+npm run test:e2e
 ```
 
-The end-to-end suite requires a configured backend and test environment.
+Run the complete configured browser test suite:
+
+```bash
+npm run test:e2e:all
+```
+
+The end-to-end tests require a running backend, configured database, and the required browser dependencies.
+
+Run backend tests:
+
+```bash
+cd backend
+mvn clean test
+```
 
 ---
 
 ## Security
 
-- Authentication using JWT.
+- JWT-based authentication.
 - Protected application routes.
 - Password hashing handled by the backend.
 - Environment-based configuration.
 - File upload validation.
 - Authenticated API requests.
+- Sensitive configuration files excluded from version control.
+
+Never commit `.env`, database passwords, JWT secrets, API keys, or other private credentials.
+
+Frontend environment variables prefixed with `VITE_` are exposed to the browser. Never store secrets in them.
 
 ---
 
@@ -252,17 +272,9 @@ The end-to-end suite requires a configured backend and test environment.
 
 **Development Complete — Deployment Pending**
 
-The project has undergone:
+The repository includes the React frontend, Spring Boot backend, PostgreSQL database scripts, API documentation, and automated tests.
 
-- Frontend and backend integration testing.
-- Automated unit and component testing.
-- Playwright end-to-end testing.
-- Responsive layout verification.
-- Cross-browser smoke testing.
-- Accessibility checks.
-- Production build verification.
-
-Production hosting, deployment configuration and final infrastructure security review are still pending.
+Production hosting and final infrastructure security review remain pending.
 
 ---
 
@@ -271,7 +283,6 @@ Production hosting, deployment configuration and final infrastructure security r
 Potential future enhancements include:
 
 - Hackathon administration dashboard.
-- Real-time messaging.
 - Advanced team matching.
 - Personalized hackathon recommendations.
 - Developer portfolios.
@@ -290,7 +301,7 @@ GitHub: [@Zek-Vampire](https://github.com/Zek-Vampire)
 
 ---
 
-#### License
+## License
 
 This project is licensed under the Apache License 2.0.
 
