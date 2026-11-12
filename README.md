@@ -103,26 +103,44 @@ Built to bring student developers together, FusionV provides a centralized space
 ```text
 FusionV/
 │
+├── .gitignore
+├── LICENSE
+├── README.md
+│
 ├── frontend/
 │   ├── public/
 │   ├── src/
 │   ├── e2e/
 │   ├── package.json
+│   ├── package-lock.json
 │   ├── vite.config.js
-│   └── playwright.config.js
+│   ├── vitest.config.js
+│   └── DEPLOYMENT.md
 │
-├── backend/
-│   ├── src/
-│   ├── database/
-│   ├── pom.xml
-│   └── .env.example
-│
-├── docs/
-│
-├── .gitignore
-├── LICENSE
-└── README.md
-```
+└── backend/
+    ├── .env.example
+    ├── .gitignore
+    ├── pom.xml
+    ├── docker-compose.yml
+    ├── run-dev.ps1
+    ├── run-dev.sh
+    ├── README.md
+    ├── API_DOCUMENTATION.md
+    ├── FRONTEND_INTEGRATION.md
+    │
+    ├── database/
+    │   ├── schema.sql
+    │   ├── demo-data.sql
+    │   ├── init/
+    │   └── migrations/
+    │
+    └── src/
+        ├── main/
+        │   ├── java/
+        │   └── resources/
+        │       └── application.properties.example
+        │
+        └── test/
 
 ---
 
